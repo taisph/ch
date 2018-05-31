@@ -15,7 +15,7 @@
  *
  */
 
-package story
+package project
 
 import (
 	"github.com/taisph/ch/pkg/cmdr"
@@ -23,16 +23,15 @@ import (
 )
 
 var (
-	storyCmd = cli.Command{
-		Name:  "story",
-		Usage: "Create or list stories",
+	projectCmd = cli.Command{
+		Name:  "project",
+		Usage: "List projects",
 		Subcommands: cli.Commands{
-			storyCreateCmd,
-			storyListCmd,
+			projectListCmd,
 		},
 	}
 )
 
 func init() {
-	cmdr.CmdRunner.Use(storyCmd)
+	cmdr.CmdRunner.Use(projectCmd)
 }

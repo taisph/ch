@@ -15,7 +15,7 @@
  *
  */
 
-package story
+package project
 
 import (
 	"fmt"
@@ -28,20 +28,19 @@ import (
 )
 
 var (
-	storyListCmd = cli.Command{Name: "list", Action: List, Usage: "List stories in specified project", Flags: []cli.Flag{
-		cli.Int64Flag{Name: "project-id, p", Usage: "Id of project to create story in"},
-	}}
+	projectListCmd = cli.Command{Name: "list", Action: List, Usage: "List projects"}
 )
 
 func List(c *cli.Context) error {
-	stories, err := ch.Client.Stories().List(c.Int64("project-id"))
+	projects, err := ch.Client.Projects().List()
 	if err != nil {
 		return cli.NewExitError(err.Error(), 1)
 	}
 
 	w := tabwriter.NewWriter(c.App.Writer, 0, 0, 2, ' ', 0)
-	for _, s := range stories {
-		fmt.Fprintf(w, "%s\t%s\t%s\n", color.GreenString("ch"+strconv.FormatInt(s.Id, 10)), s.Name, s.AppUrl)
+	for _, p := range projects {
+		t, _ := ch.Client.Teams().Get(p.TeamId)
+		fmt.Fprintf(w, "%s\t%s\t%s\n", color.GreenString(strconv.FormatInt(p.Id, 10)), t.Name, p.Name)
 	}
 	w.Flush()
 	return nil
