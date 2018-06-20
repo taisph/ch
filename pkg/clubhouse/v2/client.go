@@ -30,7 +30,7 @@ const (
 )
 
 var (
-	UserAgent = "ch 0.0.1"
+	UserAgent = "ch 0.0.2"
 )
 
 type Client struct {

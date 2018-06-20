@@ -33,6 +33,7 @@ func init() {
 	app := cmdr.CmdRunner.App
 	app.Name = "ch"
 	app.Usage = "A Clubhouse CLI"
+	app.Version = "0.0.2"
 	app.HelpName = os.Args[0]
 	app.Description = "Clubhouse CLI"
 	app.Flags = []cli.Flag{
