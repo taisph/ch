@@ -31,6 +31,7 @@ var (
 		cli.StringFlag{Name: "team, t", Usage: "Name of team to create story in (requires project, overridden by project-id)"},
 		cli.StringFlag{Name: "project, p", Usage: "Name of project in specified team to create story in (requires team, overridden by project-id)"},
 		cli.Int64Flag{Name: "project-id", Usage: "Id of project to create story in"},
+		cli.StringFlag{Name: "type, y", Usage: "Story type (feature, bug or chore)"},
 		cli.StringSliceFlag{Name: "label, l", Usage: "Label to attach to the story (case-sensitive, can be specified multiple times)"},
 		cli.StringSliceFlag{Name: "owner, w", Usage: "Owner of the story (can be specified multiple times)"},
 		cli.StringSliceFlag{Name: "follower, f", Usage: "Follower of the story (can be specified multiple times)"},
@@ -59,6 +60,10 @@ func Create(c *cli.Context) error {
 		cs = &v2.CreateStory{Name: c.Args().First(), ProjectId: project.Id}
 	} else {
 		return cli.NewExitError(fmt.Sprintf("error: you must specify either team and project names, or project id"), 1)
+	}
+
+	if t := c.String("type"); t != "" {
+		cs.StoryType = v2.StoryType(t)
 	}
 
 	if lbl := c.StringSlice("label"); len(lbl) > 0 {
