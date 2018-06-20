@@ -23,6 +23,7 @@ import (
 	_ "github.com/taisph/ch/internal/app/cmd/ch"
 	_ "github.com/taisph/ch/internal/app/cmd/project"
 	_ "github.com/taisph/ch/internal/app/cmd/story"
+	_ "github.com/taisph/ch/internal/app/cmd/team"
 	"github.com/taisph/ch/pkg/cmdr"
 )
 

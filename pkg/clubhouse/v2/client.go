@@ -30,7 +30,7 @@ const (
 )
 
 var (
-	UserAgent = "ch 0.0.1"
+	UserAgent = "ch 0.0.2"
 )
 
 type Client struct {
@@ -98,7 +98,9 @@ func (c *Client) dispatch(method string, path string, data interface{}, result i
 	decoder := json.NewDecoder(res.Body)
 	if res.StatusCode >= 400 {
 		type apiError struct {
-			Msg string `json:"message"`
+			Msg    string      `json:"message"`
+			Errors interface{} `json:"errors"`
+			Tag    string      `json:"tag"`
 		}
 		var e apiError
 		decoder.DisallowUnknownFields()

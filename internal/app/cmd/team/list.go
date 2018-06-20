@@ -15,32 +15,32 @@
  *
  */
 
-package ch
+package team
 
 import (
-	"os"
+	"fmt"
+	"strconv"
+	"text/tabwriter"
 
-	"github.com/taisph/ch/pkg/clubhouse/v2"
-	"github.com/taisph/ch/pkg/cmdr"
+	"github.com/fatih/color"
+	"github.com/taisph/ch/internal/app/cmd/ch"
 	"github.com/urfave/cli"
 )
 
 var (
-	Client *v2.Client
+	teamListCmd = cli.Command{Name: "list", Action: List, Usage: "List teams", Flags: []cli.Flag{}}
 )
 
-func init() {
-	app := cmdr.CmdRunner.App
-	app.Name = "ch"
-	app.Usage = "A Clubhouse CLI"
-	app.Version = "0.0.2"
-	app.HelpName = os.Args[0]
-	app.Description = "Clubhouse CLI"
-	app.Flags = []cli.Flag{
-		cli.StringFlag{Name: "token, t", Usage: "Clubhouse API token", EnvVar: "CLUBHOUSE_API_TOKEN"},
+func List(c *cli.Context) error {
+	teams, err := ch.Client.Teams().List()
+	if err != nil {
+		return cli.NewExitError(err.Error(), 1)
 	}
-	app.Before = func(c *cli.Context) error {
-		Client, _ = v2.NewClient(c.GlobalString("token"))
-		return nil
+
+	w := tabwriter.NewWriter(c.App.Writer, 0, 0, 2, ' ', 0)
+	for _, s := range teams {
+		fmt.Fprintf(w, "%s\t%s\t%s\n", color.GreenString(strconv.FormatInt(s.Id, 10)), s.Name, *s.Description)
 	}
+	w.Flush()
+	return nil
 }
