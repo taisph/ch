@@ -15,21 +15,25 @@
  *
  */
 
-package main
+package team
 
 import (
-	"fmt"
-
-	_ "github.com/taisph/ch/internal/app/cmd/ch"
-	_ "github.com/taisph/ch/internal/app/cmd/project"
-	_ "github.com/taisph/ch/internal/app/cmd/story"
-	_ "github.com/taisph/ch/internal/app/cmd/team"
 	"github.com/taisph/ch/pkg/cmdr"
+	"github.com/urfave/cli"
 )
 
-func main() {
-	err := cmdr.CmdRunner.Run()
-	if err != nil {
-		fmt.Errorf("%v", err)
+var (
+	teamCmd = cli.Command{
+		Name:  "team",
+		Usage: "List teams",
+		Subcommands: cli.Commands{
+			teamListCmd,
+			teamShowCmd,
+		},
 	}
+)
+
+func init() {
+	cmdr.CmdRunner.Use(teamCmd)
+	cmdr.CmdRunner.Use(teamShowCmd)
 }

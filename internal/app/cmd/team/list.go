@@ -15,21 +15,32 @@
  *
  */
 
-package main
+package team
 
 import (
 	"fmt"
+	"strconv"
+	"text/tabwriter"
 
-	_ "github.com/taisph/ch/internal/app/cmd/ch"
-	_ "github.com/taisph/ch/internal/app/cmd/project"
-	_ "github.com/taisph/ch/internal/app/cmd/story"
-	_ "github.com/taisph/ch/internal/app/cmd/team"
-	"github.com/taisph/ch/pkg/cmdr"
+	"github.com/fatih/color"
+	"github.com/taisph/ch/internal/app/cmd/ch"
+	"github.com/urfave/cli"
 )
 
-func main() {
-	err := cmdr.CmdRunner.Run()
+var (
+	teamListCmd = cli.Command{Name: "list", Action: List, Usage: "List teams", Flags: []cli.Flag{}}
+)
+
+func List(c *cli.Context) error {
+	teams, err := ch.Client.Teams().List()
 	if err != nil {
-		fmt.Errorf("%v", err)
+		return cli.NewExitError(err.Error(), 1)
 	}
+
+	w := tabwriter.NewWriter(c.App.Writer, 0, 0, 2, ' ', 0)
+	for _, s := range teams {
+		fmt.Fprintf(w, "%s\t%s\t%s\n", color.GreenString(strconv.FormatInt(s.Id, 10)), s.Name, *s.Description)
+	}
+	w.Flush()
+	return nil
 }

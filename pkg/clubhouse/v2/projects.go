@@ -19,6 +19,7 @@ package v2
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -62,6 +63,22 @@ func (s *Projects) List() ([]*Project, error) {
 	err := s.c.get("projects", nil, &res)
 	if err != nil {
 		return nil, fmt.Errorf("error listing projects: %s", err.Error())
+	}
+	return res, nil
+}
+
+func (s *Projects) GetByName(name string, teamId int64) (*Project, error) {
+	projects, err := s.List()
+	if err != nil {
+		return nil, fmt.Errorf("error getting project: %s: %s", name, err.Error())
+	}
+
+	var res *Project
+	for _, project := range projects {
+		if strings.EqualFold(project.Name, name) && project.TeamId == teamId {
+			res = project
+			break
+		}
 	}
 	return res, nil
 }

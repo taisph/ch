@@ -20,9 +20,11 @@ package v2
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
+// https://clubhouse.io/api/rest/v2/#Team
 type Team struct {
 	CreatedAt   *time.Time `json:"created_at"`
 	Description *string    `json:"description"`
@@ -83,6 +85,22 @@ func (s *Teams) Get(id int64) (*Team, error) {
 	err := s.c.get("teams/"+strconv.FormatInt(id, 10), nil, &res)
 	if err != nil {
 		return nil, fmt.Errorf("error getting team id: %d: %s", id, err.Error())
+	}
+	return res, nil
+}
+
+func (s *Teams) GetByName(name string) (*Team, error) {
+	teams, err := s.List()
+	if err != nil {
+		return nil, fmt.Errorf("error getting team: %s: %s", name, err.Error())
+	}
+
+	var res *Team
+	for _, team := range teams {
+		if strings.EqualFold(team.Name, name) {
+			res = team
+			break
+		}
 	}
 	return res, nil
 }

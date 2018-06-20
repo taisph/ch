@@ -28,13 +28,76 @@ import (
 
 var (
 	storyCreateCmd = cli.Command{Name: "create", Action: Create, Usage: "Create a new story", ArgsUsage: "<name>", Flags: []cli.Flag{
-		cli.Int64Flag{Name: "project-id, p", Usage: "Id of project to create story in"},
+		cli.StringFlag{Name: "team, t", Usage: "Name of team to create story in (requires project, overridden by project-id)"},
+		cli.StringFlag{Name: "project, p", Usage: "Name of project in specified team to create story in (requires team, overridden by project-id)"},
+		cli.Int64Flag{Name: "project-id", Usage: "Id of project to create story in"},
+		cli.StringSliceFlag{Name: "label, l", Usage: "Label to attach to the story (case-sensitive, can be specified multiple times)"},
+		cli.StringSliceFlag{Name: "owner, w", Usage: "Owner of the story (can be specified multiple times)"},
+		cli.StringSliceFlag{Name: "follower, f", Usage: "Follower of the story (can be specified multiple times)"},
 		cli.BoolFlag{Name: "open, o", Usage: "Open story in browser after creating"},
 	}}
 )
 
 func Create(c *cli.Context) error {
-	story, err := ch.Client.Stories().Create(&v2.CreateStory{Name: c.Args().First(), ProjectId: c.Int64("project-id")})
+	var cs *v2.CreateStory
+	if id := c.Int64("project-id"); id != 0 {
+		cs = &v2.CreateStory{Name: c.Args().First(), ProjectId: id}
+	} else if tn, pn := c.String("team"), c.String("project"); tn != "" && pn != "" {
+		team, err := ch.Client.Teams().GetByName(tn)
+		if err != nil {
+			return cli.NewExitError(err.Error(), 1)
+		}
+		if team == nil {
+			return cli.NewExitError(fmt.Sprintf("error: team not found: %s", tn), 1)
+		}
+
+		project, err := ch.Client.Projects().GetByName(pn, team.Id)
+		if err != nil {
+			return cli.NewExitError(err.Error(), 1)
+		}
+
+		cs = &v2.CreateStory{Name: c.Args().First(), ProjectId: project.Id}
+	} else {
+		return cli.NewExitError(fmt.Sprintf("error: you must specify either team and project names, or project id"), 1)
+	}
+
+	if lbl := c.StringSlice("label"); len(lbl) > 0 {
+		for _, n := range lbl {
+			cs.Labels = append(cs.Labels, v2.CreateLabelParams{Name: n})
+		}
+	}
+
+	if o := c.StringSlice("owner"); len(o) > 0 {
+		for _, n := range o {
+			member, err := ch.Client.Members().GetByName(n)
+			if err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
+			if member == nil {
+				fmt.Fprintf(c.App.Writer, "warning: owner not found: %s", n)
+				continue
+			}
+
+			cs.OwnerIds = append(cs.OwnerIds, member.Id)
+		}
+	}
+
+	if f := c.StringSlice("follower"); len(f) > 0 {
+		for _, n := range f {
+			member, err := ch.Client.Members().GetByName(n)
+			if err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
+			if member == nil {
+				fmt.Fprintf(c.App.Writer, "warning: follower not found: %s", n)
+				continue
+			}
+
+			cs.FollowerIds = append(cs.FollowerIds, member.Id)
+		}
+	}
+
+	story, err := ch.Client.Stories().Create(cs)
 	if err != nil {
 		return cli.NewExitError(err.Error(), 1)
 	}
