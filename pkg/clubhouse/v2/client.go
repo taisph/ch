@@ -99,6 +99,7 @@ func (c *Client) dispatch(method string, path string, data interface{}, result i
 	if res.StatusCode >= 400 {
 		type apiError struct {
 			Msg string `json:"message"`
+			Tag string `json:"tag"`
 		}
 		var e apiError
 		decoder.DisallowUnknownFields()
